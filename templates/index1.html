@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kim - AI Assistant</title>
+    <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+    <div class="sidebar">
+        <button>🌙 Theme</button>
+        <button>ℹ️ User Feedback</button>
+        <button>🚪 Logout</button>
+    </div>
+
+    <div class="container">
+        <div class="chat-header">
+            <h1>Kim - AI Assistant</h1>
+            <p>I'm here to help - ask me anything!</p>
+        </div>
+        <div class="chat-container" id="conversation"></div>
+        <div class="input-container">
+            <form id="chat-form">
+                <input type="text" id="message" name="message" placeholder="Ask Kim..." required>
+                <button type="submit" aria-label="Send"><span class="send-icon">▶</span></button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const conversationDiv = document.getElementById('conversation');
+
+        document.getElementById('chat-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const messageInput = document.getElementById('message');
+            const userMessage = messageInput.value;
+            messageInput.value = ''; // Clear input
+
+            // Display user message with avatar
+            conversationDiv.innerHTML += `
+                <div class="message user-message">
+                    <div class="avatar">U</div>
+                    <div class="message-content">${userMessage}</div>
+                </div>
+            `;
+
+            // Send message to server via AJAX for streaming
+            const eventSource = new EventSource(`/chat?message=${encodeURIComponent(userMessage)}`);
+            let assistantMessage = '';
+            let messageDiv = null;
+
+            eventSource.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                if (data.content) {
+                    if (!messageDiv) {
+                        // Create assistant message div if not already created
+                        messageDiv = document.createElement('div');
+                        messageDiv.className = 'message assistant-message';
+                        messageDiv.innerHTML = `
+                            <div class="avatar">K</div>
+                            <div class="message-content" id="streaming-content"></div>
+                        `;
+                        conversationDiv.appendChild(messageDiv);
+                    }
+                    const streamingContent = document.getElementById('streaming-content');
+                    streamingContent.textContent += data.content;
+                    assistantMessage += data.content;
+                    conversationDiv.scrollTop = conversationDiv.scrollHeight; // Scroll to bottom
+                } else if (event.data === '[DONE]') {
+                    eventSource.close();
+                }
+            };
+
+            eventSource.onerror = function() {
+                eventSource.close();
+                if (!messageDiv) {
+                    conversationDiv.innerHTML += `
+                        <div class="message assistant-message">
+                            <div class="avatar">K</div>
+                            <div class="message-content">Error: Could not fetch response.</div>
+                        </div>
+                    `;
+                }
+                conversationDiv.scrollTop = conversationDiv.scrollHeight; // Scroll to bottom
+            };
+        });
+    </script>
+</body>
+</html>
