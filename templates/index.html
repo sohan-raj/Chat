@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Chatbot</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div id="conversation" style="margin-bottom: 20px;"></div>
+    <form id="chat-form">
+        <input type="text" id="message" name="message" placeholder="Ask about GitHub..." required>
+        <button type="submit">Send</button>
+    </form>
+
+    <script>
+        document.getElementById('chat-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const messageInput = document.getElementById('message');
+            const userMessage = messageInput.value;
+            messageInput.value = ''; // Clear input
+
+            // Display user message
+            const conversationDiv = document.getElementById('conversation');
+            conversationDiv.innerHTML += `<div class="user-message">You: ${userMessage}</div>`;
+
+            // Send message to server via AJAX
+            const response = await fetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `message=${encodeURIComponent(userMessage)}`
+            });
+            const data = await response.json();
+
+            // Display assistant response
+            conversationDiv.innerHTML += `<div class="assistant-message">Bot: ${data.response}</div>`;
+            conversationDiv.scrollTop = conversationDiv.scrollHeight; // Scroll to bottom
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+}
+
+#conversation {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  padding: 10px;
+}
+
+.user-message {
+  color: blue;
+  margin: 5px 0;
+}
+
+.assistant-message {
+  color: green;
+  margin: 5px 0;
+}
+
+input[type="text"] {
+  width: 70%;
+  padding: 5px;
+}
+
+button {
+  padding: 5px 10px;
+}
