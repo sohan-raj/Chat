@@ -1,25 +1,26 @@
 import os
-from mistralai import Mistral
+from azure.ai.inference import ChatCompletionsClient
+from azure.ai.inference.models import SystemMessage, UserMessage
+from azure.core.credentials import AzureKeyCredential
 
-api_key = os.getenv("MISTRAL_API_KEY")
-client = Mistral(api_key=api_key)
+endpoint = "https://models.inference.ai.azure.com"
+model_name = "Llama-3.3-70B-Instruct"
+token = os.environ["GITHUB_TOKEN"]
 
-model = "codestral-latest"
-prompt = "def fibonacci(n: int):"
-suffix = "n = int(input('Enter a number: '))\nprint(fibonacci(n))"
-
-response = client.fim.complete(
-    model=model,
-    prompt=prompt,
-    suffix=suffix,
-    temperature=0,
-    top_p=1,
+client = ChatCompletionsClient(
+    endpoint=endpoint,
+    credential=AzureKeyCredential(token),
 )
 
-print(
-    f"""
-{prompt}
-{response.choices[0].message.content}
-{suffix}
-"""
+response = client.complete(
+    messages=[
+        SystemMessage("You are a helpful assistant."),
+        UserMessage("What is the capital of France?"),
+    ],
+    temperature=1.0,
+    top_p=1.0,
+    max_tokens=1000,
+    model=model_name
 )
+
+print(response.choices[0].message.content)
