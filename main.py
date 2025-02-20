@@ -75,9 +75,9 @@ def get_azure_streaming_response(user_message):
 def index():
     return render_template('index1.html')
 
-@app.route('/chat', methods=['POST'])
+@app.route('/chat', methods=['GET'])
 def chat():
-    user_message = request.form['message']
+    user_message = request.args.get('message')
     # Stream the response
     return get_azure_streaming_response(user_message)
 
