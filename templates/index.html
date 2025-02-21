@@ -3,60 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kim - AI Assistant</title>
-    <link rel="stylesheet" href="static/style.css">
+    <title>Unnamed Chat - Kim</title>
+    <link rel="stylesheet" href="static/stle.css">
 </head>
 <body>
-    <!-- <div class="sidebar">
-        <button>🌙 Theme</button>
-        <button>ℹ️ User Feedback</button>
-        <button>🚪 Logout</button>
-    </div> -->
+    <div class="sidebar">
+        <button aria-label="Profile" class="sidebar-icon">👤</button>
+        <button aria-label="Theme" class="sidebar-icon">🌙</button>
+        <button aria-label="User Feedback" class="sidebar-icon">ℹ️</button>
+        <button aria-label="Logout" class="sidebar-icon">🚪</button>
+        <button aria-label="Settings" class="sidebar-icon">⚙️</button>
+    </div>
 
     <div class="container">
-        <div class="chat-header">
-            <h1>Kim - AI Assistant</h1>
-            <p>I'm here to help - ask me anything!</p>
+        <div class="chat-container" id="conversation">
+            <!-- Initial bot message will be added via JavaScript or backend -->
         </div>
-        <div class="chat-container" id="conversation"></div>
         <div class="input-container">
             <form id="chat-form">
                 <input type="text" id="message" name="message" placeholder="Ask Kim..." required>
+                <button type="button" id="mic-button" aria-label="Microphone"><span class="mic-icon">🎙️</span></button>
+                <button type="button" id="attach-button" aria-label="Attach"><span class="attach-icon">📎</span></button>
                 <button type="submit" aria-label="Send"><span class="send-icon">▶</span></button>
             </form>
         </div>
     </div>
 
     <script>
+        const conversationDiv = document.getElementById('conversation');
+
+        // Add initial bot message if no conversation history
+        function loadInitialMessage() {
+            if (!sessionStorage.getItem('initialMessageShown')) {
+                conversationDiv.innerHTML = `
+                    <div class="message assistant-message">
+                        <div class="avatar">🟡</div>
+                        <div class="message-content">Hi, I'm Kim - ask me anything, I'm happy to help analyze and discuss any webpages, images, or code you share with me.</div>
+                    </div>
+                `;
+                sessionStorage.setItem('initialMessageShown', 'true');
+            }
+        }
+
+        // Load initial message on page load
+        loadInitialMessage();
+
         document.getElementById('chat-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             const messageInput = document.getElementById('message');
             const userMessage = messageInput.value;
             messageInput.value = ''; // Clear input
 
-            // Display user message
-            const conversationDiv = document.getElementById('conversation');
+            // Display user message with avatar
             conversationDiv.innerHTML += `
                 <div class="message user-message">
-                    <div class="message-content">You: ${userMessage}</div>
+                    <div class="avatar">U</div>
+                    <div class="message-content">${userMessage}</div>
                 </div>
             `;
 
-            // Send message to server via AJAX
-            const response = await fetch('/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `message=${encodeURIComponent(userMessage)}`
-            });
-            const data = await response.json();
+            // Send message to server via AJAX for streaming
+            const eventSource = new EventSource(`/chat?message=${encodeURIComponent(userMessage)}`);
+            let assistantMessage = '';
+            let messageDiv = null;
 
-            // Display assistant response
-            conversationDiv.innerHTML += `
-                <div class="message assistant-message">
-                    <div class="message-content">Kim: ${data.response}</div>
-                </div>
-            `;
-            conversationDiv.scrollTop = conversationDiv.scrollHeight; // Scroll to bottom
+            eventSource.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                if (data.content) {
+                    if (!messageDiv) {
+                        // Create a new assistant message div for each response
+                        messageDiv = document.createElement('div');
+                        messageDiv.className = 'message assistant-message';
+                        messageDiv.innerHTML = `
+                            <div class="avatar">K</div>
+                            <div class="message-content" id="streaming-content-${Date.now()}"></div>
+                        `;
+                        conversationDiv.appendChild(messageDiv);
+                    }
+                    const streamingContent = messageDiv.querySelector('.message-content');
+                    streamingContent.textContent += data.content;
+                    assistantMessage += data.content;
+                    conversationDiv.scrollTop = conversationDiv.scrollHeight; // Scroll to bottom
+                } else if (event.data === '[DONE]') {
+                    eventSource.close();
+                    messageDiv = null; // Reset for the next response
+                }
+            };
+
+            eventSource.onerror = function() {
+                eventSource.close();
+                if (!messageDiv) {
+                    conversationDiv.innerHTML += `
+                        <div class="message assistant-message">
+                            <div class="avatar">K</div>
+                            <div class="message-content">Error: Could not fetch response.</div>
+                        </div>
+                    `;
+                }
+                conversationDiv.scrollTop = conversationDiv.scrollHeight; // Scroll to bottom
+            };
+        });
+
+        // Optional: Add microphone and attach functionality (placeholders)
+        document.getElementById('mic-button').addEventListener('click', function() {
+            alert('Microphone functionality not implemented yet.');
+        });
+        document.getElementById('attach-button').addEventListener('click', function() {
+            alert('Attach functionality not implemented yet.');
         });
     </script>
 </body>

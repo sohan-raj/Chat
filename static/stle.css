@@ -1,49 +1,65 @@
 body {
   font-family: 'Arial', sans-serif;
   margin: 0;
-  background-color: #f5f5f5; /* Light gray background like ChatGPT */
-  color: #333333; /* Dark text for contrast */
+  background-color: #1a1a1a; /* Dark background like the screenshot */
+  color: #ffffff; /* White text for contrast */
   display: flex;
-  justify-content: center;
-  align-items: center;
   min-height: 100vh;
-  line-height: 1.6;
+}
+
+.sidebar {
+  width: 60px;
+  background-color: #2c2c2c; /* Dark gray for sidebar */
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0;
+  border-radius: 0 10px 10px 0;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar-icon {
+  background: none;
+  border: none;
+  color: #a0a0a0;
+  padding: 10px;
+  cursor: pointer;
+  margin: 5px 0;
+  font-size: 1.2em;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: color 0.3s, background-color 0.3s, box-shadow 0.3s;
+}
+
+.sidebar-icon:hover {
+  color: #ffffff;
+  background-color: #444444;
+  box-shadow: 0 0 10px rgba(74, 144, 226, 0.3);
 }
 
 .container {
-  width: 100%;
-  max-width: 800px; /* Similar to ChatGPT's width */
-  background-color: #ffffff; /* White container for chat */
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 100%; /* Removed max-width to stretch across viewport */
+  margin-left: 60px; /* Offset for sidebar */
+  background-color: #2c2c2c; /* Dark gray for chat area */
+  border-radius: 0 10px 10px 0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-}
-
-.chat-header {
-  background-color: #007bff; /* Blue header like ChatGPT */
-  color: #ffffff;
-  padding: 15px;
-  text-align: center;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.chat-header h1 {
-  margin: 0;
-  font-size: 1.5em;
-  font-weight: 500;
-}
-
-.chat-header p {
-  margin: 5px 0 0;
-  font-size: 0.9em;
-  opacity: 0.8;
+  flex-grow: 1;
 }
 
 .chat-container {
   padding: 20px;
-  max-height: 70vh;
+  max-height: calc(100vh - 100px); /* Adjust for fixed input */
   overflow-y: auto;
   flex-grow: 1;
 }
@@ -51,7 +67,32 @@ body {
 .message {
   margin: 10px 0;
   display: flex;
-  flex-direction: column;
+  align-items: flex-start;
+}
+
+.avatar {
+  width: 30px;
+  height: 30px;
+  background-color: #444444;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1em;
+  margin: 0 10px;
+  flex-shrink: 0;
+}
+
+.assistant-message .avatar {
+  background-color: #4a90e2; /* Blue for Kim (initial message uses blue dot) */
+}
+
+.user-message .avatar {
+  background-color: #4a90e2; /* Blue for user */
+}
+
+.assistant-message .avatar:first-child {
+  background-color: #4a90e2; /* Blue dot for initial "Hi, I'm Kim..." */
 }
 
 .message-content {
@@ -59,15 +100,17 @@ body {
   border-radius: 8px;
   max-width: 70%;
   word-wrap: break-word;
+  background-color: #444444; /* Darker gray for messages */
+  color: #ffffff;
 }
 
 .user-message {
   align-self: flex-end;
+  flex-direction: row-reverse;
 }
 
 .user-message .message-content {
-  background-color: #007bff; /* Blue for user messages, matching header */
-  color: #ffffff;
+  background-color: #4a90e2; /* Blue for user messages */
 }
 
 .assistant-message {
@@ -75,90 +118,96 @@ body {
 }
 
 .assistant-message .message-content {
-  background-color: #e9ecef; /* Light gray for assistant messages */
-  color: #333333;
+  background-color: #5cb85c; /* Green for assistant (Kim) messages after initial */
 }
 
 .input-container {
   padding: 15px;
-  border-top: 1px solid #e0e0e0;
-  background-color: #ffffff;
+  background-color: transparent;
+  position: fixed;
+  bottom: 0;
+  width: calc(100% - 60px); /* Adjust for sidebar */
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  backdrop-filter: blur(5px); /* Semi-transparent effect */
 }
 
 #chat-form {
   display: flex;
   align-items: center;
+  width: 97%;
+  background-color: rgba(68, 68, 68, 0.8); /* Semi-transparent dark gray */
+  border-radius: 20px;
+  padding: 5px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 input[type="text"] {
   flex-grow: 1;
-  padding: 10px;
-  border: 1px solid #e0e0e0;
-  border-radius: 20px;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 18px;
+  background-color: transparent;
+  color: #ffffff;
   font-size: 1em;
   outline: none;
-  background-color: #f8f9fa;
 }
 
 input[type="text"]:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+  box-shadow: none;
 }
 
-button {
-  padding: 10px 20px;
-  margin-left: 10px;
+#mic-button, #attach-button, button[aria-label="Send"] {
+  padding: 10px;
+  margin: 0 5px;
   border: none;
-  border-radius: 20px;
-  background-color: #007bff;
+  border-radius: 50%;
+  background-color: #4a90e2;
   color: #ffffff;
-  font-size: 1em;
+  font-size: 1.2em;
   cursor: pointer;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: background-color 0.3s;
 }
 
-button:hover {
-  background-color: #0056b3;
+#mic-button:hover, #attach-button:hover, button[aria-label="Send"]:hover {
+  background-color: #357abd;
 }
 
-/* Dark mode option (optional, can be toggled via JavaScript) */
-@media (prefers-color-scheme: dark) {
-  body {
-      background-color: #1a1a1a;
-      color: #ffffff;
-  }
+.mic-icon, .attach-icon, .send-icon {
+  font-size: 0.8em; /* Adjust size of icons */
+}
 
-  .container {
-      background-color: #2c2c2c;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
-  }
+.status-indicator {
+  margin-top: 5px;
+  font-size: 0.8em;
+  color: #a0a0a0;
+  text-align: right;
+}
 
-  .chat-header {
-      background-color: #4a90e2;
-      border-bottom: 1px solid #444444;
-  }
+.online-dot {
+  color: #5cb85c; /* Green dot for online status */
+}
 
-  .assistant-message .message-content {
-      background-color: #333333;
-      color: #ffffff;
-  }
+/* Ensure chat-container scrolls under fixed elements */
+.chat-container::-webkit-scrollbar {
+  width: 8px;
+}
 
-  input[type="text"] {
-      background-color: #333333;
-      border-color: #444444;
-      color: #ffffff;
-  }
+.chat-container::-webkit-scrollbar-track {
+  background: #2c2c2c;
+}
 
-  input[type="text"]:focus {
-      border-color: #4a90e2;
-      box-shadow: 0 0 5px rgba(74, 144, 226, 0.3);
-  }
+.chat-container::-webkit-scrollbar-thumb {
+  background: #444444;
+  border-radius: 4px;
+}
 
-  button {
-      background-color: #4a90e2;
-  }
-
-  button:hover {
-      background-color: #357abd;
-  }
+.chat-container::-webkit-scrollbar-thumb:hover {
+  background: #555555;
 }
